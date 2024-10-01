@@ -14,19 +14,19 @@ final List<OnboardingPage> onboardingPages = [
     title: "Welcome to Reels!",
     description:
         "Dive into a world of exciting reels and endless entertainment.",
-    imagePath: "assets/images/three.png",
+    imagePath: "assets/images/video-marketing.png",
   ),
   OnboardingPage(
     title: "Explore Trending Reels",
     description:
         "Discover the latest trends and popular reels from creators around the globe.",
-    imagePath: "assets/images/two.png",
+    imagePath: "assets/images/film-reel.png",
   ),
   OnboardingPage(
     title: "Share Your Creativity",
     description:
         "Create and share your own reels to entertain and inspire others.",
-    imagePath: "assets/images/one.png",
+    imagePath: "assets/images/movie-reel.png",
   ),
 ];
 
@@ -43,7 +43,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _nextPage() {
     if (_currentPage < onboardingPages.length - 1) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 100),
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeIn,
       );
     } else {
@@ -73,10 +73,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 50),
+                    const SizedBox(height:120),
                     Expanded(
                       child: Center(
-                        child: Image.asset(page.imagePath),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.asset(page.imagePath),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 5),
