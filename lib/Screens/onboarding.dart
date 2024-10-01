@@ -12,17 +12,20 @@ class OnboardingScreen extends StatefulWidget {
 final List<OnboardingPage> onboardingPages = [
   OnboardingPage(
     title: "Welcome to Reels!",
-    description: "Dive into a world of exciting reels and endless entertainment.",
-    imagePath: "assets/images/two.png",
-  ),
-  OnboardingPage(
-    title: "Explore Trending Reels",
-    description: "Discover the latest trends and popular reels from creators around the globe.",
+    description:
+        "Dive into a world of exciting reels and endless entertainment.",
     imagePath: "assets/images/three.png",
   ),
   OnboardingPage(
+    title: "Explore Trending Reels",
+    description:
+        "Discover the latest trends and popular reels from creators around the globe.",
+    imagePath: "assets/images/two.png",
+  ),
+  OnboardingPage(
     title: "Share Your Creativity",
-    description: "Create and share your own reels to entertain and inspire others.",
+    description:
+        "Create and share your own reels to entertain and inspire others.",
     imagePath: "assets/images/one.png",
   ),
 ];
@@ -40,7 +43,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _nextPage() {
     if (_currentPage < onboardingPages.length - 1) {
       _pageController.nextPage(
-        duration: Duration(milliseconds: 300),
+        duration:const  Duration(milliseconds: 100),
         curve: Curves.easeIn,
       );
     } else {
@@ -52,9 +55,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration:const BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.black, const Color.fromARGB(255, 108, 173, 125)],
+            colors: [Colors.black,  Color.fromARGB(255, 108, 173, 125)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -70,70 +73,79 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(height: 50),
+                    const SizedBox(height: 50),
                     Expanded(
                       child: Center(
                         child: Image.asset(page.imagePath),
                       ),
                     ),
-                    // Reduced space between image and title
-                    SizedBox(height: 5), // Reduced height for less space
+                  
+                  const   SizedBox(height: 5), // Reduced height for less space
                     Text(
                       page.title,
-                      style:const TextStyle(
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                     // Further reduced space between title and description
-                    SizedBox(height: 10), // Reduced from 15 to 10
+                    const SizedBox(height: 10), // Reduced from 15 to 10
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
                         page.description,
                         textAlign: TextAlign.center,
-                        style:const TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.white70,
                         ),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     // Dots Indicator above the button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(onboardingPages.length, (index) {
-                        return Container(
-                          margin: EdgeInsets.symmetric(horizontal: 4.0),
-                          width: 12.0,
-                          height: 12.0,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _currentPage == index ? Colors.white : Colors.white.withOpacity(0.5),
-                          ),
-                        );
-                      }),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 175,top: 10,),
+                      child: Row(
+                        children: List.generate(onboardingPages.length, (index) {
+                          return buildDot(index);
+                        }),
+                      ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _nextPage,
                       child: Text(
-                        _currentPage == onboardingPages.length - 1 ? 'Get Started' : 'Next',
+                        _currentPage == onboardingPages.length - 1
+                            ? 'Get Started'
+                            : 'Next',
                       ),
                       style: ElevatedButton.styleFrom(
                         foregroundColor: primarycolor,
                         backgroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        padding:
+                          const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                       ),
                     ),
-                    SizedBox(height: 20),
+                  const   SizedBox(height: 20),
                   ],
                 ),
               ],
             );
           },
         ),
+      ),
+    );
+  }
+
+  Container buildDot(int index) {
+    return Container(
+      height: 10,
+      width: _currentPage == index ? 30 : 10,
+      margin: const EdgeInsets.only(right: 5),
+      decoration: BoxDecoration(
+        color: _currentPage == index ? primarycolor : Colors.white,
+        borderRadius: BorderRadius.circular(5),
       ),
     );
   }
