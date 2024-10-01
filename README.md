@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Reels App is a Flutter-based mobile application that allows users to explore, create, and share exciting reels. It provides a seamless experience for discovering trending content and engaging with a community of creators. 🌟
+🌟The Reels App is a Flutter-based mobile application that allows users to explore exciting reels. It provides a seamless experience for discovering trending content and engaging with a community of creators. 
 
 ## Features
 
