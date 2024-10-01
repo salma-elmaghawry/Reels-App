@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:reels/widgets/conatants.dart';
+import 'package:reels/helper/conatants.dart';
 import 'package:reels/widgets/video_player.dart';
 import 'package:reels/Services/api_service.dart';
 
@@ -14,7 +14,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late Future<List<dynamic>> _reelsFuture;
   int _currentIndex = 0;
-  PageController _pageController = PageController();  // Controller for scrolling
+  final PageController _pageController = PageController(); 
 
   @override
   void initState() {
@@ -24,9 +24,8 @@ class _HomePageState extends State<HomePage> {
 
   void _playNextVideo() {
     setState(() {
-      _currentIndex = (_currentIndex + 1) ;  // Assuming 10 videos per page
+      _currentIndex = (_currentIndex + 1) ; 
     });
-    // Scroll to the next video
     _pageController.animateToPage(
       _currentIndex,
       duration: Duration(milliseconds: 300),
@@ -41,14 +40,15 @@ class _HomePageState extends State<HomePage> {
         future: _reelsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(color: primarycolor,));
+            return  const Center(
+              child: CircularProgressIndicator(color: primarycolor,));
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.hasData) {
             final reels = snapshot.data!;
             return PageView.builder(
               controller: _pageController,
-              scrollDirection: Axis.vertical,  // For vertical scroll
+              scrollDirection: Axis.vertical,  
               onPageChanged: (index) {
                 setState(() {
                   _currentIndex = index;
@@ -56,14 +56,14 @@ class _HomePageState extends State<HomePage> {
               },
               itemCount: reels.length,
               itemBuilder: (context, index) {
-                return VideoPlayerScreen(
+                return VideoPlayerWidget(
                   videoUrl: reels[index]['video'],
-                  onVideoEnd: _playNextVideo,  // Trigger next video on video end
+                  onVideoEnd: _playNextVideo,  
                 );
               },
             );
           } else {
-            return Center(child: Text('No videos available'));
+            return const Center(child: Text('No videos available'));
           }
         },
       ),

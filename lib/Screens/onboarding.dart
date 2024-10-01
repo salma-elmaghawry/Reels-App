@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reels/Screens/home_page.dart';
 import 'package:reels/models/onboarding_data_model.dart';
-import 'package:reels/widgets/conatants.dart';
+import 'package:reels/helper/conatants.dart';
 
 class OnboardingScreen extends StatefulWidget {
   static String id = "OnboardingScreen";
@@ -31,7 +31,7 @@ final List<OnboardingPage> onboardingPages = [
 ];
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  PageController _pageController = PageController();
+  final PageController _pageController = PageController();
   int _currentPage = 0;
 
   void _onPageChanged(int page) {
@@ -43,7 +43,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _nextPage() {
     if (_currentPage < onboardingPages.length - 1) {
       _pageController.nextPage(
-        duration:const  Duration(milliseconds: 100),
+        duration: const Duration(milliseconds: 100),
         curve: Curves.easeIn,
       );
     } else {
@@ -57,7 +57,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.black,  Color.fromARGB(255, 108, 173, 125)],
+            colors: [Colors.black, Color.fromARGB(255, 108, 173, 125)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -79,8 +79,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: Image.asset(page.imagePath),
                       ),
                     ),
-                  
-                  const   SizedBox(height: 5), // Reduced height for less space
+                    const SizedBox(height: 5),
                     Text(
                       page.title,
                       style: const TextStyle(
@@ -89,8 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         color: Colors.white,
                       ),
                     ),
-                    // Further reduced space between title and description
-                    const SizedBox(height: 10), // Reduced from 15 to 10
+                    const SizedBox(height: 10),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
@@ -103,11 +101,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Dots Indicator above the button
                     Padding(
-                      padding: const EdgeInsets.only(left: 175,top: 10,),
+                      padding: const EdgeInsets.only(
+                        left: 175,
+                        top: 10,
+                      ),
                       child: Row(
-                        children: List.generate(onboardingPages.length, (index) {
+                        children:
+                            List.generate(onboardingPages.length, (index) {
                           return buildDot(index);
                         }),
                       ),
@@ -123,11 +124,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       style: ElevatedButton.styleFrom(
                         foregroundColor: primarycolor,
                         backgroundColor: Colors.white,
-                        padding:
-                          const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 50, vertical: 15),
                       ),
                     ),
-                  const   SizedBox(height: 20),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ],
