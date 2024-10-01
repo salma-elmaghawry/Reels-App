@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:reels/widgets/conatants.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
@@ -18,7 +19,7 @@ class VideoPlayerScreen extends StatefulWidget {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late VideoPlayerController _controller;
-  Timer? _timer;  // Make _timer nullable to avoid initialization issues
+  Timer? _timer;
   double _progress = 0.0;
   bool _isPaused = false;
   bool _showControlIcon = false;
@@ -30,7 +31,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       ..initialize().then((_) {
         setState(() {});
         _controller.play();
-        _startProgressTracking();  // Start tracking progress after initialization
+        _startProgressTracking(); // Start tracking progress after initialization
       });
 
     // Add listener to detect when the video ends
@@ -44,7 +45,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
   @override
   void dispose() {
-    // Cancel the timer if it's not null
     _timer?.cancel();
     _controller.dispose();
     super.dispose();
@@ -65,13 +65,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     setState(() {
       if (_controller.value.isPlaying) {
         _controller.pause();
-        _showControlIcon = true;
+        _isPaused = true;
       } else {
         _controller.play();
-        _showControlIcon = true;
+        _isPaused = false;
       }
 
-      // Hide the play/pause icon after a short delay for a cleaner UI
+      // Show play/pause icon when toggled
+      _showControlIcon = true;
+
+      // Hide the play/pause icon after 2 seconds for a cleaner UI
       Future.delayed(Duration(seconds: 2), () {
         setState(() {
           _showControlIcon = false;
@@ -88,7 +91,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         backgroundColor: Colors.black,
         body: Stack(
           children: [
-            // Video Player
+            // Full-Screen Video Player
             Column(
               children: [
                 Expanded(
@@ -98,12 +101,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                             aspectRatio: _controller.value.aspectRatio,
                             child: VideoPlayer(_controller),
                           )
-                        : CircularProgressIndicator(),
+                        : CircularProgressIndicator(color: primarycolor,),
                   ),
                 ),
                 // Progress Bar
                 LinearProgressIndicator(
                   value: _progress,
+                  backgroundColor: Colors.white.withOpacity(0.3),
+                  valueColor: AlwaysStoppedAnimation<Color>(primarycolor),
                 ),
               ],
             ),
@@ -113,7 +118,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                 child: Icon(
                   _controller.value.isPlaying
                       ? Icons.pause_circle_filled
-                      : Icons.play_circle_filled, // Change icon based on play/pause state
+                      : Icons.play_circle_filled,
                   size: 80,
                   color: Colors.white.withOpacity(0.8),
                 ),

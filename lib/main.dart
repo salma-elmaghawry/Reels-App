@@ -15,9 +15,10 @@ class ReelsApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         HomePage.id: (context) => const HomePage(),
-        Onboarding.id: (context) => const Onboarding(),
+        OnboardingScreen.id: (context) => OnboardingScreen(),
       },
-      initialRoute: HomePage.id,
+      initialRoute:OnboardingScreen.id,
+      
     );
   }
 }

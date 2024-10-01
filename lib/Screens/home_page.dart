@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reels/widgets/conatants.dart';
 import 'package:reels/widgets/video_player.dart';
 import 'package:reels/Services/api_service.dart';
 
@@ -40,7 +41,7 @@ class _HomePageState extends State<HomePage> {
         future: _reelsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator(color: primarycolor,));
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.hasData) {
