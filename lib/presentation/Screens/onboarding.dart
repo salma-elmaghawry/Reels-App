@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:reels/presentation/Screens/home_page.dart';
 import 'package:reels/data/models/onboarding_data_model.dart';
 import 'package:reels/helper/conatants.dart';
+import 'package:reels/presentation/Screens/home_page.dart';
 
 class OnboardingScreen extends StatefulWidget {
   static String id = "OnboardingScreen";

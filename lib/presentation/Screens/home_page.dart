@@ -1,20 +1,19 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:reels/helper/conatants.dart';
-import 'package:reels/presentation/widgets/video_player.dart';
 import 'package:reels/data/Services/api_service.dart';
+import 'package:reels/presentation/widgets/video_player.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
   static String id = "HomePage";
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   late Future<List<dynamic>> _reelsFuture;
   int _currentIndex = 0;
-  final PageController _pageController = PageController(); 
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -22,13 +21,15 @@ class _HomePageState extends State<HomePage> {
     _reelsFuture = FetchService().getReels();
   }
 
-  void _playNextVideo() {
+  void _playNextVideo(List<dynamic> reels) {
+    // Pass the list of reels
     setState(() {
-      _currentIndex = (_currentIndex + 1) ; 
+      _currentIndex = ((_currentIndex + 1) % reels.length)
+          .toInt(); 
     });
     _pageController.animateToPage(
       _currentIndex,
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 500),
       curve: Curves.easeInOut,
     );
   }
@@ -40,15 +41,14 @@ class _HomePageState extends State<HomePage> {
         future: _reelsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return  const Center(
-              child: CircularProgressIndicator(color: primarycolor,));
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.hasData) {
             final reels = snapshot.data!;
             return PageView.builder(
               controller: _pageController,
-              scrollDirection: Axis.vertical,  
+              scrollDirection: Axis.vertical,
               onPageChanged: (index) {
                 setState(() {
                   _currentIndex = index;
@@ -58,7 +58,8 @@ class _HomePageState extends State<HomePage> {
               itemBuilder: (context, index) {
                 return VideoPlayerWidget(
                   videoUrl: reels[index]['video'],
-                  onVideoEnd: _playNextVideo,  
+                  onVideoEnd: () =>
+                      _playNextVideo(reels), 
                 );
               },
             );

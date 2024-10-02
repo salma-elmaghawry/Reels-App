@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:reels/helper/conatants.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reels/business_logic/cubit/video_cubit.dart';
+import 'package:reels/business_logic/cubit/video_state.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
-  const VideoPlayerWidget({
-    required this.videoUrl,
-    required this.onVideoEnd,
-    super.key,
-  });
+  const VideoPlayerWidget(
+      {super.key, required this.videoUrl, required this.onVideoEnd});
 
   final String videoUrl;
   final VoidCallback onVideoEnd;
@@ -18,53 +17,46 @@ class VideoPlayerWidget extends StatefulWidget {
 }
 
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
-  late VideoPlayerController _controller;
   Timer? _timer;
   double _progress = 0.0;
-  bool _isPaused = false;
   bool _showControlIcon = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((_) {
-        setState(() {});
-        _controller.play();
-        _startProgressTracking();
-      });
-    _controller.addListener(() {
-      if (_controller.value.isInitialized &&
-          _controller.value.position >= _controller.value.duration) {
-        widget.onVideoEnd(); // Trigger the next video callback
-      }
-    });
+    context.read<VideoCubit>().loadVideo(widget.videoUrl);
+    _startProgressTracking();
   }
+
   @override
   void dispose() {
     _timer?.cancel();
-    _controller.dispose();
     super.dispose();
   }
+
   void _startProgressTracking() {
-    _timer = Timer.periodic(Duration(milliseconds: 500), (timer) {
-      if (_controller.value.isInitialized) {
+    _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      final controller = context.read<VideoCubit>().videoRepository.controller;
+      if (controller != null && controller.value.isInitialized) {
         setState(() {
-          _progress = _controller.value.position.inSeconds /
-              _controller.value.duration.inSeconds;
+          _progress = controller.value.position.inSeconds.toDouble() /
+              controller.value.duration.inSeconds.toDouble();
+          if (controller.value.position == controller.value.duration) {
+            widget.onVideoEnd();
+          }
         });
       }
     });
   }
+
   void _togglePlayPause() {
+    final cubit = context.read<VideoCubit>();
+    if (cubit.videoRepository.controller?.value.isPlaying ?? false) {
+      cubit.pauseVideo();
+    } else {
+      cubit.playVideo();
+    }
     setState(() {
-      if (_controller.value.isPlaying) {
-        _controller.pause();
-        _isPaused = true;
-      } else {
-        _controller.play();
-        _isPaused = false;
-      }
       _showControlIcon = true;
       Future.delayed(const Duration(seconds: 2), () {
         setState(() {
@@ -73,48 +65,59 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       });
     });
   }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _togglePlayPause,
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: Stack(
-          children: [
-            Column(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: _controller.value.isInitialized
-                        ? AspectRatio(
-                            aspectRatio: _controller.value.aspectRatio,
-                            child: VideoPlayer(_controller),
-                          )
-                        : const CircularProgressIndicator(
-                            color: primarycolor,
+    return BlocBuilder<VideoCubit, VideoState>(
+      builder: (context, state) {
+        if (state is VideoLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is VideoPlaying || state is VideoPaused) {
+          final controller =
+              context.read<VideoCubit>().videoRepository.controller;
+          return GestureDetector(
+            onTap: _togglePlayPause,
+            child: Scaffold(
+              backgroundColor: Colors.black,
+              body: Stack(
+                children: [
+                  Column(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: AspectRatio(
+                            aspectRatio: 16 / 9,
+                            child: VideoPlayer(controller!),
                           ),
+                        ),
+                      ),
+                      LinearProgressIndicator(
+                        value: _progress,
+                        backgroundColor: Colors.white.withOpacity(0.3),
+                        valueColor:
+                            const AlwaysStoppedAnimation<Color>(Colors.blue),
+                      ),
+                    ],
                   ),
-                ),
-                LinearProgressIndicator(
-                  value: _progress,
-                  backgroundColor: Colors.white.withOpacity(0.3),
-                  valueColor: const AlwaysStoppedAnimation<Color>(primarycolor),
-                ),
-              ],
-            ),
-            if (_showControlIcon)
-              Center(
-                child: Icon(
-                  _controller.value.isPlaying
-                      ? Icons.pause_circle_filled
-                      : Icons.play_circle_filled,
-                  size: 80,
-                  color: Colors.white.withOpacity(0.8),
-                ),
+                  if (_showControlIcon)
+                    Center(
+                      child: Icon(
+                        controller.value.isPlaying
+                            ? Icons.pause_circle_filled
+                            : Icons.play_circle_filled,
+                        size: 80,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                ],
               ),
-          ],
-        ),
-      ),
+            ),
+          );
+        } else if (state is VideoError) {
+          return Center(child: Text('Error: ${state.message}'));
+        }
+        return const Center(child: Text('No video loaded'));
+      },
     );
   }
 }
