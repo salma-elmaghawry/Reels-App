@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reels/helper/conatants.dart';
-import 'package:reels/widgets/video_player.dart';
-import 'package:reels/Services/api_service.dart';
+import 'package:reels/presentation/widgets/video_player.dart';
+import 'package:reels/data/Services/api_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

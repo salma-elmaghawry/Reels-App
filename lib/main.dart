@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:reels/Screens/home_page.dart';
-import 'package:reels/Screens/onboarding.dart';
+import 'package:reels/presentation/Screens/home_page.dart';
+import 'package:reels/presentation/Screens/onboarding.dart';
 
 void main() {
   runApp(const ReelsApp());
