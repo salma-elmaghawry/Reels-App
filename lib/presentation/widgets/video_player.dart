@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reels/business_logic/cubit/video_cubit.dart';
 import 'package:reels/business_logic/cubit/video_state.dart';
+import 'package:reels/helper/conatants.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
@@ -39,9 +40,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       final controller = context.read<VideoCubit>().videoRepository.controller;
       if (controller != null && controller.value.isInitialized) {
         setState(() {
-          _progress = controller.value.position.inSeconds.toDouble() /
-              controller.value.duration.inSeconds.toDouble();
-          if (controller.value.position == controller.value.duration) {
+          _progress = (controller.value.position.inSeconds.toDouble() /
+              (controller.value.duration.inSeconds.toDouble() + 0.001));
+          if (controller.value.position >= controller.value.duration) {
             widget.onVideoEnd();
           }
         });
@@ -58,7 +59,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     }
     setState(() {
       _showControlIcon = true;
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 1), () {
         setState(() {
           _showControlIcon = false;
         });
@@ -71,10 +72,14 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     return BlocBuilder<VideoCubit, VideoState>(
       builder: (context, state) {
         if (state is VideoLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator(color: primarycolor,));
         } else if (state is VideoPlaying || state is VideoPaused) {
           final controller =
               context.read<VideoCubit>().videoRepository.controller;
+          if (controller == null || !controller.value.isInitialized) {
+            return const Center(child: CircularProgressIndicator(color: primarycolor,));
+          }
+
           return GestureDetector(
             onTap: _togglePlayPause,
             child: Scaffold(
@@ -86,8 +91,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                       Expanded(
                         child: Center(
                           child: AspectRatio(
-                            aspectRatio: 16 / 9,
-                            child: VideoPlayer(controller!),
+                            aspectRatio: controller.value.aspectRatio,
+                            child: VideoPlayer(controller),
                           ),
                         ),
                       ),
@@ -95,7 +100,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                         value: _progress,
                         backgroundColor: Colors.white.withOpacity(0.3),
                         valueColor:
-                            const AlwaysStoppedAnimation<Color>(Colors.blue),
+                            const AlwaysStoppedAnimation<Color>(primarycolor),
                       ),
                     ],
                   ),
