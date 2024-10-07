@@ -39,7 +39,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       _currentPage = page;
     });
   }
-
+///
   void _nextPage() {
     if (_currentPage < onboardingPages.length - 1) {
       _pageController.nextPage(
