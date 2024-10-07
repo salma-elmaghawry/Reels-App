@@ -59,6 +59,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       
+      
       body: FutureBuilder<List<String>>(
         future: _reelsFuture,
         builder: (context, snapshot) {
@@ -72,6 +73,7 @@ class _HomePageState extends State<HomePage> {
 
           return PageView.builder(
             scrollDirection: Axis.vertical,
+            
             itemCount: snapshot.data!.length,
             controller: _pageController,
             onPageChanged: (index) {

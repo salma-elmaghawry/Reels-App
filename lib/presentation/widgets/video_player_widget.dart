@@ -26,37 +26,38 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   void _updateState() {
     if (mounted) {
-      setState(() {}); 
+      setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
-        AspectRatio(
-          aspectRatio: widget.controller.value.aspectRatio,
-          child: GestureDetector(
-            onTap: () {
-              if (widget.controller.value.isPlaying) {
-                widget.controller.pause();
-              } else {
-                widget.controller.play();
-              }
-            },
+        // Fullscreen video player
+        GestureDetector(
+          onTap: () {
+            if (widget.controller.value.isPlaying) {
+              widget.controller.pause();
+            } else {
+              widget.controller.play();
+            }
+          },
+          child: SizedBox.expand(
             child: VideoPlayer(widget.controller),
           ),
         ),
-      
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        Positioned(
+          bottom: 10,
+          left: 16,
+          right: 16,
           child: LinearProgressIndicator(
             value: widget.controller.value.isInitialized
                 ? widget.controller.value.position.inMilliseconds /
                     widget.controller.value.duration.inMilliseconds
                 : 0,
             backgroundColor: Colors.grey,
-            valueColor:const  AlwaysStoppedAnimation<Color>(primarycolor),
+            valueColor: const  AlwaysStoppedAnimation<Color>(primarycolor),
           ),
         ),
       ],
