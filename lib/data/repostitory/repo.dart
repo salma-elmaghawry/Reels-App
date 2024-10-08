@@ -1,42 +1,30 @@
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:video_player/video_player.dart';
+// import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+// import 'package:video_player/video_player.dart';
 
-class VideoRepository {
-  VideoPlayerController? _controller;
-  final List<String> _cachedVideos = [];
+// class VideoRepository {
+//   VideoPlayerController? _controller;
 
-  Future<void> initializePlayer(String videoUrl) async {
-    final fileInfo = await DefaultCacheManager().getFileFromCache(videoUrl);
-    
-    if (fileInfo == null) {
-      _controller = VideoPlayerController.network(videoUrl);
-      await _controller!.initialize();
-      await cacheVideo(videoUrl);
-    } else {
-      final file = fileInfo.file;
-      _controller = VideoPlayerController.file(file);
-      await _controller!.initialize();
-    }
-    
-    _controller!.play(); 
-  }
+//   VideoPlayerController get controller {
+//     if (_controller == null) {
+//       throw Exception('VideoPlayerController is not initialized. Call initializePlayer first.');
+//     }
+//     return _controller!;
+//   }
 
-  Future<void> cacheVideo(String videoUrl) async {
-    await DefaultCacheManager().downloadFile(videoUrl); 
-    _cachedVideos.add(videoUrl); 
-  }
+//   void initializePlayer(String videoUrl) {
+//     if (_controller != null) {
+//       _controller!.dispose(); 
+//     }
 
-  Future<void> preloadVideos(List<String> videoUrls) async {
-    for (String url in videoUrls) {
-      if (!_cachedVideos.contains(url)) {
-        await cacheVideo(url); 
-      }
-    }
-  }
+//     final cacheManager = DefaultCacheManager();
+//     _controller = VideoPlayerController.network(videoUrl)
+//       ..initialize().then((_) {
+//         _controller!.setLooping(false); 
+//         _controller!.play(); 
+//       });
+//   }
 
-  VideoPlayerController? get controller => _controller;
-
-  void dispose() {
-    _controller?.dispose();
-  }
-}
+//   void dispose() {
+//     _controller?.dispose();
+//   }
+// }

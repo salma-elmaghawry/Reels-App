@@ -1,62 +1,79 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:reels/data/Services/api_service.dart';
-import 'package:reels/data/repostitory/repo.dart';
+import 'package:reels/helper/conatants.dart';
 import 'package:reels/presentation/widgets/video_player_widget.dart';
 
-
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
   static String id = "HomePage";
   @override
-  _HomePageState createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
-
 class _HomePageState extends State<HomePage> {
-  final ApiService _apiService = ApiService();
-  final VideoRepository _videoRepository = VideoRepository();
-  late Future<List<String>> _videos;
-
+  late Future<List<dynamic>> _reelsFuture;
+  int _currentIndex = 0;
+  PageController _pageController = PageController();
+  final CacheManager _videoCacheManager = CacheManager(Config(
+    'videoCache',
+    stalePeriod: const Duration(days: 7), 
+    maxNrOfCacheObjects: 50, 
+  ));  
+  
   @override
   void initState() {
     super.initState();
-    _videos = _apiService.getReels(); 
+    _reelsFuture = fetchAndCacheReels();
   }
-
-  @override
-  void dispose() {
-    _videoRepository.dispose();
-    super.dispose();
+   Future<List<dynamic>> fetchAndCacheReels() async {
+    final reelsData = await FetchService().getReels();
+    for (var reel in reelsData) {
+      final videoUrl = reel['video'];
+      await _videoCacheManager.downloadFile(videoUrl);
+    }
+    return reelsData;
   }
-
+  void _playNextVideo() {
+    setState(() {
+      _currentIndex = (_currentIndex + 1) ;  
+    });
+    _pageController.animateToPage(
+      _currentIndex,
+      duration:const  Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
-      body: FutureBuilder<List<String>>(
-        future: _videos,
+      body: FutureBuilder<List<dynamic>>(
+        future: _reelsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const  Center(child: CircularProgressIndicator(color: primarycolor,));
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            final videos = snapshot.data!;
-            return ListView.builder(
-              itemCount: videos.length,
+          } else if (snapshot.hasData) {
+            final reels = snapshot.data!;
+            return PageView.builder(
+              controller: _pageController,
+              scrollDirection: Axis.vertical,  
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              itemCount: reels.length,
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text('Video ${index + 1}'),
-                  onTap: () async {
-                    await _videoRepository.initializePlayer(videos[index]);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => VideoPlayerWidget(videoRepository: _videoRepository),
-                      ),
-                    );
-                  },
+                return VideoPlayerScreen(
+                  videoUrl: reels[index]['video'],
+                  onVideoEnd: _playNextVideo,  
+                  cacheManager:_videoCacheManager,
                 );
               },
             );
+          } else {
+            return const Center(child: Text('No videos available'));
           }
         },
       ),
