@@ -9,20 +9,20 @@ class VideoPlayerScreen extends StatefulWidget {
   const VideoPlayerScreen({
     required this.videoUrl,
     required this.onVideoEnd,
-    required this.cacheManager, 
+    required this.cacheManager,
     super.key,
   });
 
   final String videoUrl;
   final VoidCallback onVideoEnd; 
-  final CacheManager cacheManager; 
+  final CacheManager cacheManager;
 
   @override
   State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
 }
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
-  late VideoPlayerController _controller;
+  VideoPlayerController? _controller;
   Timer? _timer;
   double _progress = 0.0;
   bool _isPaused = false;
@@ -41,19 +41,20 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     if (fileInfo != null && fileInfo.file.existsSync()) {
       videoFile = fileInfo.file; 
     } else {
-      videoFile = await widget.cacheManager.getSingleFile(widget.videoUrl);
+      videoFile = await widget.cacheManager.getSingleFile(widget.videoUrl); 
     }
 
     _controller = VideoPlayerController.file(videoFile)
       ..initialize().then((_) {
         setState(() {});
-        _controller.play();
+        _controller?.play();
         _startProgressTracking();
       });
 
-    _controller.addListener(() {
-      if (_controller.value.isInitialized &&
-          _controller.value.position >= _controller.value.duration) {
+    _controller?.addListener(() {
+      if (_controller != null &&
+          _controller!.value.isInitialized &&
+          _controller!.value.position >= _controller!.value.duration) {
         widget.onVideoEnd(); 
       }
     });
@@ -62,16 +63,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   void _startProgressTracking() {
     _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      if (_controller.value.isInitialized) {
+      if (_controller != null && _controller!.value.isInitialized) {
         setState(() {
-          _progress = _controller.value.position.inSeconds /
-              _controller.value.duration.inSeconds;
+          _progress = _controller!.value.position.inSeconds /
+              _controller!.value.duration.inSeconds;
         });
       }
     });
@@ -79,19 +80,21 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
   void _togglePlayPause() {
     setState(() {
-      if (_controller.value.isPlaying) {
-        _controller.pause();
-        _showControlIcon = true;
-      } else {
-        _controller.play();
-        _showControlIcon = true;
-      }
+      if (_controller != null) {
+        if (_controller!.value.isPlaying) {
+          _controller!.pause();
+          _showControlIcon = true;
+        } else {
+          _controller!.play();
+          _showControlIcon = true;
+        }
 
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          _showControlIcon = false;
+        Future.delayed(const Duration(seconds: 2), () {
+          setState(() {
+            _showControlIcon = false;
+          });
         });
-      });
+      }
     });
   }
 
@@ -107,12 +110,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               children: [
                 Expanded(
                   child: Center(
-                    child: _controller.value.isInitialized
+                    child: _controller != null && _controller!.value.isInitialized
                         ? AspectRatio(
-                            aspectRatio: _controller.value.aspectRatio,
-                            child: VideoPlayer(_controller),
+                            aspectRatio: _controller!.value.aspectRatio,
+                            child: VideoPlayer(_controller!),
                           )
-                        : CircularProgressIndicator(color: primarycolor),
+                        : const CircularProgressIndicator(color: primarycolor),
                   ),
                 ),
                 LinearProgressIndicator(
@@ -124,7 +127,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
             if (_showControlIcon)
               Center(
                 child: Icon(
-                  _controller.value.isPlaying
+                  _controller != null && _controller!.value.isPlaying
                       ? Icons.pause_circle_filled
                       : Icons.play_circle_filled,
                   size: 80,
