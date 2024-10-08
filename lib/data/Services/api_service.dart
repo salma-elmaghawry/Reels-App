@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class FetchService {
+class ApiService {
   final String url = "https://api.sawalef.app/api/v1/reels";
 
   Future<List<String>> getReels() async {

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:reels/helper/conatants.dart';
+import 'package:reels/data/repostitory/repo.dart';
 import 'package:video_player/video_player.dart';
-
 class VideoPlayerWidget extends StatefulWidget {
-  final VideoPlayerController controller;
+  final VideoRepository videoRepository;
 
-  VideoPlayerWidget({required this.controller});
+  const VideoPlayerWidget({Key? key, required this.videoRepository}) : super(key: key);
 
   @override
   _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
@@ -15,52 +14,45 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(_updateState);
   }
 
   @override
   void dispose() {
-    widget.controller.removeListener(_updateState);
+    widget.videoRepository.dispose(); // Dispose of the video controller
     super.dispose();
-  }
-
-  void _updateState() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Fullscreen video player
-        GestureDetector(
-          onTap: () {
-            if (widget.controller.value.isPlaying) {
-              widget.controller.pause();
+    return Scaffold(
+    
+      body: Center(
+        child: FutureBuilder(
+          future: widget.videoRepository.controller?.initialize(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              return AspectRatio(
+                aspectRatio: 16 / 9,
+                child: VideoPlayer(widget.videoRepository.controller!),
+              );
             } else {
-              widget.controller.play();
+              return CircularProgressIndicator();
             }
           },
-          child: SizedBox.expand(
-            child: VideoPlayer(widget.controller),
-          ),
         ),
-        Positioned(
-          bottom: 10,
-          left: 16,
-          right: 16,
-          child: LinearProgressIndicator(
-            value: widget.controller.value.isInitialized
-                ? widget.controller.value.position.inMilliseconds /
-                    widget.controller.value.duration.inMilliseconds
-                : 0,
-            backgroundColor: Colors.grey,
-            valueColor: const  AlwaysStoppedAnimation<Color>(primarycolor),
-          ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            widget.videoRepository.controller!.value.isPlaying
+                ? widget.videoRepository.controller!.pause()
+                : widget.videoRepository.controller!.play();
+          });
+        },
+        child: Icon(
+          widget.videoRepository.controller!.value.isPlaying ? Icons.pause : Icons.play_arrow,
         ),
-      ],
+      ),
     );
   }
 }
