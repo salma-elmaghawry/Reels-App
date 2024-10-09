@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:reels/helper/conatants.dart';
@@ -14,7 +13,7 @@ class VideoPlayerScreen extends StatefulWidget {
   });
 
   final String videoUrl;
-  final VoidCallback onVideoEnd; 
+  final VoidCallback onVideoEnd;
   final CacheManager cacheManager;
 
   @override
@@ -25,7 +24,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   VideoPlayerController? _controller;
   Timer? _timer;
   double _progress = 0.0;
-  bool _isPaused = false;
   bool _showControlIcon = false;
 
   @override
@@ -35,34 +33,43 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   }
 
   Future<void> _initializeVideoPlayer() async {
-    final fileInfo = await widget.cacheManager.getFileFromCache(widget.videoUrl);
-    File videoFile;
+    try {
+      final fileInfo =
+          await widget.cacheManager.getFileFromCache(widget.videoUrl);
+      final videoFile = fileInfo?.file;
 
-    if (fileInfo != null && fileInfo.file.existsSync()) {
-      videoFile = fileInfo.file; 
-    } else {
-      videoFile = await widget.cacheManager.getSingleFile(widget.videoUrl); 
-    }
-
-    _controller = VideoPlayerController.file(videoFile)
-      ..initialize().then((_) {
-        setState(() {});
-        _controller?.play();
-        _startProgressTracking();
-      });
-
-    _controller?.addListener(() {
-      if (_controller != null &&
-          _controller!.value.isInitialized &&
-          _controller!.value.position >= _controller!.value.duration) {
-        widget.onVideoEnd(); 
+      if (videoFile != null) {
+        _controller = VideoPlayerController.file(videoFile);
+      } else {
+        _controller = VideoPlayerController.network(widget.videoUrl);
       }
-    });
+
+      await _controller!.initialize();
+      setState(() {});
+      _controller!.play();
+      _startProgressTracking();
+
+      _controller!.addListener(_onVideoEnd);
+    } catch (e) {
+      setState(() {
+        _controller = null;
+      });
+      print('Error initializing video player: $e');
+    }
+  }
+
+  void _onVideoEnd() {
+    if (_controller != null &&
+        _controller!.value.isInitialized &&
+        _controller!.value.position >= _controller!.value.duration) {
+      widget.onVideoEnd();
+    }
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _controller?.removeListener(_onVideoEnd); // Remove listener when disposing
     _controller?.dispose();
     super.dispose();
   }
@@ -83,12 +90,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       if (_controller != null) {
         if (_controller!.value.isPlaying) {
           _controller!.pause();
-          _showControlIcon = true;
         } else {
           _controller!.play();
-          _showControlIcon = true;
         }
+        _showControlIcon = true;
 
+        // Hide the control icon after a delay
         Future.delayed(const Duration(seconds: 2), () {
           setState(() {
             _showControlIcon = false;
@@ -110,7 +117,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               children: [
                 Expanded(
                   child: Center(
-                    child: _controller != null && _controller!.value.isInitialized
+                    child: _controller != null &&
+                            _controller!.value.isInitialized
                         ? AspectRatio(
                             aspectRatio: _controller!.value.aspectRatio,
                             child: VideoPlayer(_controller!),

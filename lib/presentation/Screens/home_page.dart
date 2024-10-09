@@ -14,25 +14,26 @@ class _HomePageState extends State<HomePage> {
   late Future<List<dynamic>> _reelsFuture;
   int _currentIndex = 0;
   PageController _pageController = PageController();
-  final CacheManager _videoCacheManager = CacheManager(Config(
-    'videoCache',
-    stalePeriod: const Duration(days: 7), 
-    maxNrOfCacheObjects: 50, 
-  ));  
+  final CacheManager _cacheManager = DefaultCacheManager();
+  final int _cacheBatchSize = 5;  
   
   @override
   void initState() {
     super.initState();
-    _reelsFuture = fetchAndCacheReels();
+    _reelsFuture = FetchService().getReels();
+    _reelsFuture.then((reels) {
+      _cacheVideos(0, _cacheBatchSize, reels);
+    });
+
   }
-   Future<List<dynamic>> fetchAndCacheReels() async {
-    final reelsData = await FetchService().getReels();
-    for (var reel in reelsData) {
-      final videoUrl = reel['video'];
-      await _videoCacheManager.downloadFile(videoUrl);
+  Future<void> _cacheVideos(int startIndex, int count, List<dynamic> reels) async {
+    final endIndex = (startIndex + count) > reels.length ? reels.length : (startIndex + count);
+    for (int i = startIndex; i < endIndex; i++) {
+      final videoUrl = reels[i]['video'];
+      await _cacheManager.downloadFile(videoUrl);
     }
-    return reelsData;
   }
+
   void _playNextVideo() {
     setState(() {
       _currentIndex = (_currentIndex + 1) ;  
@@ -62,13 +63,16 @@ class _HomePageState extends State<HomePage> {
                 setState(() {
                   _currentIndex = index;
                 });
+                if (index % _cacheBatchSize == 0 && index + _cacheBatchSize < reels.length) {
+                  _cacheVideos(index, _cacheBatchSize, reels);
+                }
               },
               itemCount: reels.length,
               itemBuilder: (context, index) {
                 return VideoPlayerScreen(
                   videoUrl: reels[index]['video'],
                   onVideoEnd: _playNextVideo,  
-                  cacheManager:_videoCacheManager,
+                  cacheManager:_cacheManager,
                 );
               },
             );
